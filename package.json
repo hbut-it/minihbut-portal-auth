@@ -13,6 +13,7 @@
     "egg-validate": "^2.0.2"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "egg-bin": "6",
     "egg-mock": "5",
     "eslint": "8",

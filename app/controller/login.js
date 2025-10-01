@@ -27,15 +27,25 @@ class LoginController extends Controller {
     }
 
     // 获取验证码图片
-    const captchaImage = await this.getCaptchaImage(ctx, session);
+    const captchaImage = this.getCaptchaImage(ctx, session);
     if (!captchaImage) {
       ctx.body = { code: 500, message: "Internal Server Error" };
       return;
     }
 
     // 获取验证码识别文本
-    const captchaText = await this.getCaptchaText(ctx, captchaImage);
+    const captchaText = this.getCaptchaText(ctx, captchaImage);
     if (!captchaText) {
+      ctx.body = { code: 500, message: "Internal Server Error" };
+      return;
+    }
+
+    // 加密密码
+    const encryptedPassword = ctx.service.encrypt.encryptPassword(
+      password,
+      salt
+    );
+    if (!encryptedPassword) {
       ctx.body = { code: 500, message: "Internal Server Error" };
       return;
     }
