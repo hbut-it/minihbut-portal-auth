@@ -10,14 +10,32 @@ module.exports = (appInfo) => {
    **/
   const config = (exports = {});
 
+  // 安全配置
   config.security = {
     csrf: {
       enable: false, // 关闭 csrf 检测
     },
   };
 
-  // add your middleware config here
+  // 中间件配置
   config.middleware = ["errorHandler"];
+
+  // 统一身份认证接口配置
+  config.auth = {
+    base: "https://auth.hbut.edu.cn/authserver",
+    url: {
+      login: "/login",
+      getCaptcha: "/getCaptcha.htl",
+    },
+  };
+
+  // OCR 接口配置
+  config.ocr = {
+    base: "http://210.16.161.230:8000",
+    url: {
+      ocr: "/ocr",
+    },
+  };
 
   return {
     ...config,

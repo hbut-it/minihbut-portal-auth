@@ -48,7 +48,9 @@ class LoginController extends Controller {
    */
   async getKeys(ctx) {
     // 发起请求
-    const res = await ctx.curl("https://auth.hbut.edu.cn/authserver/login");
+    const res = await ctx.curl(
+      `${ctx.app.config.auth.base}${ctx.app.config.auth.url.login}`
+    );
 
     // 请求失败
     if (res.status !== 200) {
@@ -92,8 +94,9 @@ class LoginController extends Controller {
   async getCaptchaImage(ctx, session) {
     // 发起请求
     const res = await ctx.curl(
-      "https://auth.hbut.edu.cn/authserver/getCaptcha.htl?" +
-        Math.floor(Date.now() / 1000),
+      `${ctx.app.config.auth.base}${
+        ctx.app.config.auth.url.getCaptcha
+      }?${Math.floor(Date.now() / 1000)}`,
       {
         method: "GET",
         headers: {
@@ -119,13 +122,16 @@ class LoginController extends Controller {
    */
   async getCaptchaText(ctx, image) {
     // 发起请求
-    const res = await ctx.curl("http://cn-hbsy-ct.s.stslb.com:8000/ocr", {
-      method: "POST",
-      data: {
-        image,
-      },
-      dataType: "json",
-    });
+    const res = await ctx.curl(
+      `${ctx.app.config.ocr.base}${ctx.app.config.ocr.url.ocr}`,
+      {
+        method: "POST",
+        data: {
+          image,
+        },
+        dataType: "json",
+      }
+    );
 
     // 请求失败
     if (res.status !== 200) {
