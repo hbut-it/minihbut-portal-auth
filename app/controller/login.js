@@ -59,7 +59,6 @@ class LoginController extends Controller {
       captchaText,
       execution
     );
-    console.log(authStatus);
     if (authStatus === 1) {
       ctx.body = { code: 400, message: "Bad Request" };
       return;
@@ -75,6 +74,23 @@ class LoginController extends Controller {
       ctx.body = { code: 500, message: "Internal Server Error" };
       return;
     }
+
+    // 教务系统登录
+    const { uid, route } = await this.systemLogin(ctx, session, authTicket);
+    if (!uid || !route) {
+      ctx.body = { code: 500, message: "Internal Server Error" };
+      return;
+    }
+
+    // 返回 UID 和 Route
+    ctx.body = {
+      code: 200,
+      message: "Success",
+      data: {
+        uid,
+        route,
+      },
+    };
   }
 
   /**
@@ -239,6 +255,80 @@ class LoginController extends Controller {
 
     // 其他错误
     return { status: 3, ticket: null };
+  }
+
+  /**
+   * 尝试登录
+   * @param {Egg.Context<app>} ctx Context
+   * @param {string} first_url URL
+   * @param {Array} first_cookies Cookies
+   * @returns {Array|boolean} Cookies 或 true/false
+   */
+  async tryLogin(ctx, first_url, first_cookies) {
+    let cookies = [...first_cookies];
+    let success = true;
+
+    const tryRequest = async (url) => {
+      try {
+        const res = await ctx.curl(url, {
+          method: "GET",
+          headers: {
+            Cookie: cookies.join("; "),
+          },
+        });
+
+        if (res.headers["set-cookie"]) {
+          cookies = cookies.concat(
+            res.headers["set-cookie"].map((cookie) => cookie.split(";")[0])
+          );
+        }
+
+        if (res.status >= 300 && res.status < 400) {
+          const location = res.headers.location;
+          if (location) {
+            await tryRequest(location);
+          }
+        }
+      } catch (err) {
+        success = false;
+        return;
+      }
+    };
+
+    await tryRequest(first_url);
+
+    return success ? cookies : false;
+  }
+
+  /**
+   * 教务系统登录
+   * @param {Egg.Context<app>} ctx Context
+   * @param {string} session Session
+   * @param {string} ticket 统一身份认证登录凭证
+   * @returns
+   */
+  async systemLogin(ctx, session, ticket) {
+    const url = `${ctx.app.config.auth.base}${ctx.app.config.auth.url.login}?service=https://jwxt.hbut.edu.cn/admin/caslogin`;
+    const cookies = [`JSESSIONID=${session}`, `CASTGC=${ticket}`];
+
+    // 请求登录
+    const res = await this.tryLogin(ctx, url, cookies);
+
+    // 登录成功
+    if (
+      res.some((item) => item.startsWith("uid=")) &&
+      res.some((item) => item.startsWith("route="))
+    ) {
+      return {
+        uid: res.find((item) => item.startsWith("uid=")).replace("uid=", ""),
+        route: res
+          .find((item) => item.startsWith("route="))
+          .replace("route=", ""),
+      };
+    }
+
+    // 登录失败
+    return { uid: null, route: null };
   }
 }
 
