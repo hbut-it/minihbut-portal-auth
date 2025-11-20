@@ -31,7 +31,7 @@ module.exports = (appInfo) => {
 
   // OCR 接口配置
   config.ocr = {
-    base: "http://127.0.0.1:8000",
+    base: "http://ddddocr-fastapi:8000",
     url: {
       ocr: "/ocr",
     },
