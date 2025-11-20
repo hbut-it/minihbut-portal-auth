@@ -23,7 +23,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --title=egg-server-hbut-auth",
+    "start": "egg-scripts start --title=egg-server-hbut-auth",
     "stop": "egg-scripts stop --title=egg-server-hbut-auth",
     "dev": "egg-bin dev",
     "test": "npm run lint -- --fix && npm run test:local",
