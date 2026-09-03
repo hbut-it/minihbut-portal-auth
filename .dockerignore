@@ -1,0 +1,10 @@
+.git
+node_modules
+logs
+coverage
+.nyc_output
+.idea
+.vscode
+npm-debug.log
+Dockerfile
+README.md
